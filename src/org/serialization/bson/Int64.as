@@ -15,10 +15,20 @@ package org.serialization.bson
 		 * @param bytearray A ByteArray with 8 bytes containing the Int64
 		 */
 		public function Int64 ( bytearray : ByteArray ) : void {
-			rep = bytearray;
 			rep.endian = Endian.LITTLE_ENDIAN;
+			for( var i : int = 0; i < 8; ++i ) {
+				rep[i] = bytearray.readByte();
+			}
 		}
 		
+		
+		public function dup() : Int64 {
+			var bin : ByteArray = new ByteArray();
+			for( var i : int = 0; i < 8; ++i ) {
+				bin[i] = rep[i];
+			}
+			return new Int64( bin );
+		}
 		
 		
 		/**
@@ -60,6 +70,28 @@ package org.serialization.bson
 		 */
 		public function getAsBytes() : ByteArray {
 			return rep;
+		}
+		
+		internal function getLowPosPart() : uint {
+			var obj : Int64;
+			if( negative() ) {
+				obj = Int64.twoComp( this );
+			} else {
+				obj = dup();
+			}
+			obj.rep.position = 0;
+			return rep.readUnsignedInt();
+		}
+		
+		internal function getHighPosPart() : uint {
+			var obj : Int64;
+			if( negative() ) {
+				obj = Int64.twoComp( this );
+			} else {
+				obj = dup();
+			}
+			obj.rep.position = 4;
+			return rep.readUnsignedInt();
 		}
 		
 		public static function get ZERO() : Int64 {

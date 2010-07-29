@@ -107,10 +107,10 @@ package org.serialization.bson {
 				type = BSON_DOUBLE;
 				value = toBSONObjectID( object as ObjectID );
 				
-			//} else if ( object is Date ) {
-			//	
-			//	type = BSON_UTC;
-			//	value = toBSONDate( object as Date );
+			} else if ( object is Date ) {
+				
+				type = BSON_UTC;
+				value = toBSONDate( object as Date );
 				
 			} else if ( object is Binary ) {
 				
@@ -275,12 +275,14 @@ package org.serialization.bson {
 		 * @return The BSON representation of the parameter
 		 */
 		private static function toBSONDate( object : Date ) : ByteArray {
-			var dayPart : int = object.millisecondsUTC; // part guaranteed to fit in an integer
-			dayPart += object.secondsUTC * 1000;
-			dayPart += object.minutesUTC * 1000 * 60;
-			dayPart += object.hoursUTC * 1000 * 60 * 60;
-			var val : Int64 = Int64.fromInt( dayPart );
-			// TODO
+			var val : Int64;
+			var raw : Number = object.time;
+			
+			// 67108864 = 2^26 = half the double's mantissa < 2^32
+			// used to fit Numbers in ints
+			val = Int64.fromInt( raw / 67108864 );
+			val = Int64.mul( val, Int64.fromInt( 67108864 ) );
+			val = Int64.add( val, Int64.fromInt( raw % 67108864 ) );
 			return val.getAsBytes();
 		}
 		
@@ -355,10 +357,10 @@ package org.serialization.bson {
 						break;
 					
 					
-					//case BSON_UTC:
-					//	
-					//	arr[count] = fromBSONDate( bson );
-					//	break;
+					case BSON_UTC:
+						
+						arr[count] = fromBSONDate( bson );
+						break;
 					
 					
 					case BSON_BINARY:
@@ -457,10 +459,10 @@ package org.serialization.bson {
 						break;
 					
 					
-					//case BSON_UTC:
-					//	
-					//	arr[count] = fromBSONDate( bson );
-					//	break;
+					case BSON_UTC:
+						
+						arr[key] = fromBSONDate( bson );
+						break;
 					
 					
 					case BSON_BINARY:
@@ -539,6 +541,14 @@ package org.serialization.bson {
 			var res : String = bson.readMultiByte(length - 1, "utf-8");
 			bson.readByte(); // discard terminator
 			return res;
+		}
+		
+		private static function fromBSONDate( bson : ByteArray ) : Date {
+			var val : Int64 = new Int64( bson );
+			var rep : Number = val.getHighPosPart() * 4294967296 + val.getLowPosPart();
+			var date : Date = new Date();
+			date.setTime( rep );
+			return date;
 		}
 		
 		private static function fromBSONBinary( bson : ByteArray ) : Binary {
