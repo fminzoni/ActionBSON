@@ -24,6 +24,7 @@ package org.serialization.bson
 		
 		public function dup() : Int64 {
 			var bin : ByteArray = new ByteArray();
+			bin.endian = Endian.LITTLE_ENDIAN;
 			for( var i : int = 0; i < 8; ++i ) {
 				bin[i] = rep[i];
 			}
@@ -80,7 +81,7 @@ package org.serialization.bson
 				obj = dup();
 			}
 			obj.rep.position = 0;
-			return rep.readUnsignedInt();
+			return obj.rep.readUnsignedInt();
 		}
 		
 		internal function getHighPosPart() : uint {
@@ -91,7 +92,7 @@ package org.serialization.bson
 				obj = dup();
 			}
 			obj.rep.position = 4;
-			return rep.readUnsignedInt();
+			return obj.rep.readUnsignedInt();
 		}
 		
 		public static function get ZERO() : Int64 {

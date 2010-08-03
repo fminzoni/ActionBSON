@@ -277,12 +277,21 @@ package org.serialization.bson {
 		private static function toBSONDate( object : Date ) : ByteArray {
 			var val : Int64;
 			var raw : Number = object.time;
+			var negative : Boolean = false;
+			
+			if( raw < 0 ) {
+				raw *= -1;
+				negative = true;
+			}
 			
 			// 67108864 = 2^26 = half the double's mantissa < 2^32
 			// used to fit Numbers in ints
 			val = Int64.fromInt( raw / 67108864 );
 			val = Int64.mul( val, Int64.fromInt( 67108864 ) );
 			val = Int64.add( val, Int64.fromInt( raw % 67108864 ) );
+			if( negative ) {
+				val = Int64.twoComp( val );
+			}
 			return val.getAsBytes();
 		}
 		
@@ -489,7 +498,7 @@ package org.serialization.bson {
 						
 				}
 				type = bson.readByte();
-			}
+			}	
 			return arr;
 		}
 		
@@ -545,10 +554,15 @@ package org.serialization.bson {
 		
 		private static function fromBSONDate( bson : ByteArray ) : Date {
 			var val : Int64 = new Int64( bson );
-			var rep : Number = val.getHighPosPart() * 4294967296 + val.getLowPosPart();
-			var date : Date = new Date();
-			date.setTime( rep );
-			return date;
+			var lowPos : uint = val.getLowPosPart();
+			var highPos : uint = val.getHighPosPart();
+			var rep : Number = highPos * 4294967296 + lowPos;
+			
+			if( val.negative() ) {
+				rep *= -1;
+			}
+			
+			return new Date( rep );
 		}
 		
 		private static function fromBSONBinary( bson : ByteArray ) : Binary {
@@ -581,7 +595,7 @@ package org.serialization.bson {
 		 * @param bytearray The ByteArray to be translated into hexadecimal
 		 * @return A String containing the hexadecimal representation of the parameter 
 		 */
-		private static function byteArrayToHex( bytearray : ByteArray ) : String {
+		public static function byteArrayToHex( bytearray : ByteArray ) : String {
 			var str : String = new String;
 			for( var i : int = 0; i < bytearray.length; ++i ) {
 				var tmp : String = bytearray[i].toString(16);
