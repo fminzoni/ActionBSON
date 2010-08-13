@@ -70,7 +70,7 @@ package org.serialization.bson
 		 * @return An 8-byte ByteArray containing the Int64 in little-endian format
 		 */
 		public function getAsBytes() : ByteArray {
-			return rep;
+			return dup().rep;
 		}
 		
 		internal function getLowPosPart() : uint {

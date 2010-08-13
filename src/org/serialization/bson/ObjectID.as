@@ -13,8 +13,7 @@ package org.serialization.bson
 		 * @param bytearray A little-endian, 12-byte ByteArray containing the ID
 		 */
 		public function ObjectID ( bytearray : ByteArray ) : void {
-			rep.endian = Endian.LITTLE_ENDIAN;
-			rep = bytearray;
+			setFromBytes( bytearray );
 		}
 		
 		
@@ -24,7 +23,10 @@ package org.serialization.bson
 		 * @param bytearray A little-endian, 12-byte ByteArray containing the ID
 		 */
 		public function setFromBytes( bytearray : ByteArray ) : void {
-			rep = bytearray;
+			rep = new ByteArray();
+			for ( var i : int = 0; i < 12; ++i ) {
+				rep[i] = bytearray.readByte();
+			}
 		}
 
 		
@@ -35,6 +37,14 @@ package org.serialization.bson
 		 */
 		public function getAsBytes() : ByteArray {
 			return rep;
+		}
+		
+		public function toString() : String {
+			var str : String = "";
+			for ( var i : int = 0; i < 12; ++i ) {
+				str += rep[i].toString( 16 );
+			}
+			return str;
 		}
 	}
 }

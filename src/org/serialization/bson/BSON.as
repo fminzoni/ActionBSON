@@ -54,6 +54,7 @@ package org.serialization.bson {
 		 * document.position is left at the end of the parsed document
 		 */
 		public static function decode( document : ByteArray ) : Object {
+			document.endian = Endian.LITTLE_ENDIAN;
 			var res : Object = fromBSONDocument( document );
 			return res;
 		}
@@ -589,31 +590,6 @@ package org.serialization.bson {
 			return str;
 		}
 		
-		
-		/**
-		 * @brief Represents the bytes in a ByteArray as hexadecimal values for printing
-		 * @param bytearray The ByteArray to be translated into hexadecimal
-		 * @return A String containing the hexadecimal representation of the parameter 
-		 */
-		public static function byteArrayToHex( bytearray : ByteArray ) : String {
-			var str : String = new String;
-			for( var i : int = 0; i < bytearray.length; ++i ) {
-				var tmp : String = bytearray[i].toString(16);
-				if ( tmp.length < 2 ) {
-					tmp = "0" + tmp;
-				}
-				str += "\\x" + tmp;
-			}
-			return str;
-		}
-		
-		private static function objectToString( object : Object ) : String {
-			var str : String = "";
-			for( var key : String in object) {
-				str += key + ": " + object[key] + "\n";
-			}
-			return str;
-		}
 		
 		/**
 		 * @brief Concatenates two ByteArrays
