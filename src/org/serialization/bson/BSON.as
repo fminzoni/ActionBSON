@@ -326,8 +326,16 @@ package org.serialization.bson {
 		
 		private static function toBSONBinary( object : Binary ) : ByteArray {
 			var ret : ByteArray  = new ByteArray();
-			ret.writeInt( object.data.length ); // write ByteArray size
-			ret.writeByte( object.subtype );
+			// thanks to Михаил for the suggestion
+			ret.endian = Endian.LITTLE_ENDIAN;
+			if(object.subtype == Binary.BINARY_OLD) {
+				ret.writeInt( object.data.length+4 ); // byte list contains another size indicator
+				ret.writeByte( object.subtype );
+				ret.writeInt( object.data.length );
+			} else {
+				ret.writeInt( object.data.length ); // size of content
+				ret.writeByte( object.subtype );
+			}
 			joinByteArrays( ret, object.data );
 			return ret;
 		} 
@@ -594,11 +602,16 @@ package org.serialization.bson {
 			return new Date( rep );
 		}
 		
+		
 		private static function fromBSONBinary( bson : ByteArray ) : Binary {
 			var length : int = bson.readInt();
 			var subtype : int = bson.readByte();
+			// thanks to Михаил
+			if( subtype == Binary.BINARY_OLD ) {
+				length = bson.readInt();
+			}
 			var data : ByteArray = new ByteArray();
-			bson.readBytes( data, bson.position, length );
+			bson.readBytes( data, 0, length );
 			return new Binary( subtype, data );
 		}
 		

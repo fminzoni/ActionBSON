@@ -24,6 +24,7 @@
 package org.serialization.bson
 {
 	import flash.utils.ByteArray;
+	import flash.utils.Endian;
 
 	public class Binary
 	{
@@ -41,6 +42,7 @@ package org.serialization.bson
 		public function Binary( subtype : int, data : ByteArray ) {
 			this.subtype = subtype;
 			this.data = data;
+			data.endian = Endian.LITTLE_ENDIAN;
 		}
 	}
 }
