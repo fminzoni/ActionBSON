@@ -290,7 +290,7 @@ package org.serialization.bson
 				
 				op1 = Int64.twoComp( op1 );
 				op2 = Int64.twoComp( op2 );
-				for( var j : int = 7; i >= 0; --j ) {
+				for( var j : int = 7; j >= 0; --j ) { // thanks to darkredz for the fix
 					if( op1.rep[j] > op2.rep[j] ) {
 						return -1;
 					} else if( op1.rep[j] < op2.rep[j] ) {
