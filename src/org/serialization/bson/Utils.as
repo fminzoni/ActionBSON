@@ -50,15 +50,20 @@ package org.serialization.bson
 		 * @param object The object to be represented in the string
 		 * @return A string showing key-values pairs
 		 */
-		public static function objectToString( object : Object ) : String {
+		public static function objectToString( object : Object, indent : String = "" ) : String {
 			var str : String = "";
 			for( var key : String in object) {
-				if( key is ObjectID ) {
-					str += key + ": " + ( object[key] as ObjectID ).toString() + "\n";
-				} else if( key is Int64 ) {
-					str += key + ": " + ( object[key] as Int64 ).toString() + "\n";
+				if( object[key] is ObjectID ) {
+					str += indent + key + ": " + ( object[key] as ObjectID ).toString() + "\n";
+				} else if( object[key] is Int64 ) {
+					str += indent + key + ": " + ( object[key] as Int64 ).toString() + "\n";
+				} else if ( object[key] is Array ) {
+					str += indent + key + ":\n";
+					for each(var o : Object in object[key]) {
+						str += objectToString(o, indent+"\t");
+					}
 				} else {
-					str += key + ": " + object[key] + "\n";
+					str += indent + key + ": " + object[key] + "\n";
 				}
 			}
 			return str;
