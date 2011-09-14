@@ -28,6 +28,8 @@ package org.serialization.bson {
 	
 	import flashx.textLayout.tlf_internal;
 	
+	import org.db.mongo.Document;
+	
 	public class BSON {
 		
 		// the BSON types
@@ -60,7 +62,7 @@ package org.serialization.bson {
 		 * @return A BSON representation of the parameter, or null if the parameter is null
 		 * The position of the returned ByteArray points to the beginning of the document
 		 */
-		public static function encode( document : Object ) : ByteArray {
+		public static function encode( document : Document ) : ByteArray {
 			if( document == null ) { // cannot encode a null document
 				return null;
 			}
@@ -68,7 +70,7 @@ package org.serialization.bson {
 			res.position = 0;
 			return res;
 		}
-		
+						
 		/**
 		 * @brief Turn a BSON document into an Object
 		 * @param document A BSON document
@@ -148,7 +150,7 @@ package org.serialization.bson {
 			} else if ( object is Object ) {
 				
 				type = BSON_DOCUMENT;
-				value = toBSONDocument( object as Object );
+				value = toBSONDocument( object as Document );
 				
 			} else {
 				
@@ -251,32 +253,60 @@ package org.serialization.bson {
 			bson.position = 0;
 			return bson;
 		}
-		
-		
+				
 		/**
 		 * @brief Compute the BSON representation of a document
 		 * @param object An object representing a document
 		 * @return The BSON representation of the parameter
 		 */
-		private static function toBSONDocument( object : Object ) : ByteArray {
-			var bson : ByteArray = new ByteArray();
+		private static function toBSONDocument(object:Document):ByteArray
+		{
+			var bson:ByteArray      = new ByteArray();
 			bson.endian = Endian.LITTLE_ENDIAN;
 			bson.writeInt(0); // reserve space for the document size
 			
-			for ( var sub : String in object ) {
-				var parsed : Array = parseItem( object[sub] );
-				bson.writeByte( parsed[0] );
-				bson.writeMultiByte( sub, "utf-8" );
-				bson.writeByte( BSON_TERMINATOR );
-				joinByteArrays( bson, parsed[1] );
+			
+			var parsed:Array;
+			//			if (object is Document)
+			//			{
+			const document:Document = object as Document;
+			for (var i:Number = 0; i < document.FieldsCount; i++)
+			{
+				//					trace("document.getKeyAt(i) = " + document.getKeyAt(i));
+				//					trace("document.getValueAt(i) = " + document.getValueAt(i));
+				parsed = parseItem(document.getValueAt(i));
+				//					trace("name type - parsed[0] = " + parsed[0]);
+				//					trace("name string - document.getKeyAt(i) = " + document.getKeyAt(i));
+				bson.writeByte(parsed[0]);
+				bson.writeMultiByte(document.getKeyAt(i), "utf-8");
+				bson.writeByte(BSON_TERMINATOR);
+				
+				//					trace("parsed[1] = " + parsed[1]);
+				joinByteArrays(bson, parsed[1]);
 			}
-			bson.writeByte( BSON_TERMINATOR );
+			//			}
+			//			else
+			//			{
+			//				for (var sub:String in object)
+			//				{
+			//					parsed = parseItem(object[sub]);
+			//					bson.writeByte(parsed[0]);
+			//					bson.writeMultiByte(sub, "utf-8");
+			//					bson.writeByte(BSON_TERMINATOR);
+			//					joinByteArrays(bson, parsed[1]);
+			//				}
+			//			}
+			
+			bson.writeByte(BSON_TERMINATOR);
 			
 			// write the document size at the beginning of the array
 			bson.position = 0;
-			bson.writeInt( bson.length );
+			bson.endian = Endian.LITTLE_ENDIAN;
+			bson.writeInt(bson.length);
+			bson.position = 0;
 			
 			bson.position = 0;
+			bson.endian = Endian.LITTLE_ENDIAN;
 			return bson;
 		}
 		
