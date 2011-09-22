@@ -68,6 +68,7 @@ package org.serialization.bson {
 			}
 			var res : ByteArray = toBSONDocument( document );
 			res.position = 0;
+			res.endian = Endian.LITTLE_ENDIAN;
 			return res;
 		}
 						
@@ -129,7 +130,7 @@ package org.serialization.bson {
 				
 			} else if ( object is ObjectID ) {
 				
-				type = BSON_DOUBLE;
+				type = BSON_OBJECTID;
 				value = toBSONObjectID( object as ObjectID );
 				
 			} else if ( object is Date ) {
@@ -147,7 +148,7 @@ package org.serialization.bson {
 				type = BSON_ARRAY;
 				value = toBSONArray( object as Array );
 				
-			} else if ( object is Object ) {
+			} else if ( object is Document ) {
 				
 				type = BSON_DOCUMENT;
 				value = toBSONDocument( object as Document );
