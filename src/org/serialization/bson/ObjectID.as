@@ -26,7 +26,7 @@ package org.serialization.bson
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 
-	public class ObjectID {
+	public class ObjectID extends Object{
 		
 		// BSON is little-endian
 		private var rep : ByteArray;
